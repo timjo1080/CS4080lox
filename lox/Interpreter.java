@@ -104,6 +104,7 @@ class Interpreter implements Expr.Visitor<Object> {
             case MINUS:
                 checkNumberOperands(expr.operator, left, right);
                 return (double)left - (double)right;
+            //chapter 7 challenge 2 starts here
             case PLUS:
                 if (left instanceof Double && right instanceof Double) {
                     return (double)left + (double)right;
@@ -113,9 +114,15 @@ class Interpreter implements Expr.Visitor<Object> {
                 }
                 throw new RuntimeError(expr.operator,
                 "Operands must be two numbers or two strings.");
+            // end
+            //chapter 7 challenge 3 starts here
             case SLASH:
+                if( (double)right == 0) {
+                throw new RuntimeError(expr.operator, "Division by zero.");
+                }
                 checkNumberOperands(expr.operator, left, right);
                 return (double)left / (double)right;
+            // end
             case STAR:
                 checkNumberOperands(expr.operator, left, right);
                 return (double)left * (double)right;

@@ -3,12 +3,15 @@ package lox;
 import java.util.List;
 
 import lox.Expr.Conditional;
+import lox.Stmt.Break;
 
 class Interpreter implements Expr.Visitor<Object>,
                              Stmt.Visitor<Void>{
     private Environment environment = new Environment();
     private static Object uninitialized = new Object();
 
+    private static class BreakException extends RuntimeException {}
+    
     // chapter 8 challenge 1
     public void interpret(Expr expression) {
         try {
@@ -182,11 +185,19 @@ class Interpreter implements Expr.Visitor<Object>,
 
     @Override
     public Void visitWhileStmt(Stmt.While stmt) {
-        while (isTruthy(evaluate(stmt.condition))) {
-        execute(stmt.body);
+        try {
+            while (isTruthy(evaluate(stmt.condition))) {
+                execute(stmt.body);
+            }
+        } catch (BreakException e) {
+            // Exit the loop when a break statement is encountered
         }
         return null;
     }
+    public Void visitBreakStmt(Stmt.Break stmt) {
+        throw new BreakException();
+    }
+    
 
     @Override
     public Object visitAssignExpr(Expr.Assign expr) {
@@ -257,5 +268,4 @@ class Interpreter implements Expr.Visitor<Object>,
         Lox.runtimeError(error);
         }
     }
-
 }

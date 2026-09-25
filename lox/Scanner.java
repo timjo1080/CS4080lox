@@ -83,15 +83,32 @@ class Scanner {
                 addToken(match('=') ? GREATER_EQUAL : GREATER);
                 break;
 
+            // chapter 4, challenge 4: adding support for multi-line comments
             case '/':
                 if (match('/')) {
                     // A comment goes until the end of the line.
                     while (peek() != '\n' && !isAtEnd()) advance();
-                } else {
+                } else if (match('*')) {
+                    // A comment goes until the end of the line.
+                    while ((peek() != '*' || peekNext() != '/') && !isAtEnd())
+                    {
+                        // if we see a newline, increment line counter, moves on to next line
+                        if (peek() == '\n') line++;
+                        advance();
+                    }
+                    // consume the closing */
+                    if (!isAtEnd()) {
+                        advance(); // consume the '*'
+                        advance(); // consume the '/'
+                    }
+                } 
+                else {
                     addToken(SLASH);
                 }
                 break;
 
+            // end of chapter 4, challenge 4
+            
             case ' ':
             case '\r':
             case '\t':

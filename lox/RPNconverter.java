@@ -1,5 +1,8 @@
 package lox;
 
+import lox.Expr.Assign;
+import lox.Expr.Variable;
+
 class RPNConverter implements Expr.Visitor<String> {
     String print(Expr expr) {
         return expr.accept(this);
@@ -39,5 +42,17 @@ class RPNConverter implements Expr.Visitor<String> {
                 new Expr.Binary(new Expr.Literal(4), new Token(TokenType.MINUS, "-", null, 1), new Expr.Literal(3))));
 
         System.out.println(new RPNConverter().print(expression));
+    }
+
+    @Override
+    public String visitAssignExpr(Assign expr) {
+        // TODO Auto-generated method stub
+        throw new UnsupportedOperationException("Unimplemented method 'visitAssignExpr'");
+    }
+
+    @Override
+    public String visitVariableExpr(Variable expr) {
+        // TODO Auto-generated method stub
+        throw new UnsupportedOperationException("Unimplemented method 'visitVariableExpr'");
     }
 }

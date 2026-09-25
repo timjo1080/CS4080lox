@@ -69,7 +69,9 @@ class Scanner {
             case '+': addToken(PLUS); break;
             case ';': addToken(SEMICOLON); break;
             case '*': addToken(STAR); break;
-
+            case '?': addToken(QUESTION); break;
+            case ':': addToken(COLON); break;
+            
             case '!':
                 addToken(match('=') ? BANG_EQUAL : BANG);
                 break;
@@ -108,7 +110,7 @@ class Scanner {
                 break;
 
             // end of chapter 4, challenge 4
-            
+
             case ' ':
             case '\r':
             case '\t':

@@ -5,6 +5,10 @@ class RPNConverter implements Expr.Visitor<String> {
         return expr.accept(this);
     }
 
+    public String visitConditionalExpr(Expr.Conditional expr) {
+        return expr.condition.accept(this) + " " + expr.thenBranch.accept(this) + " " + expr.elseBranch.accept(this) + " ?";
+    }
+    
     /* challenge 3 starts here */
 
     /* for binary groupings e.g. 1 + 2 */

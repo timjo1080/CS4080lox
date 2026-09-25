@@ -16,6 +16,31 @@ class Parser {
         this.tokens = tokens;
     }
 
+    //chapter 8 challenge 1 -- two passes: first, checks if expression is expression, then checks if expression is statement.
+    public Object parseRepl() {
+        if(match(VAR, PRINT, IF, WHILE, FOR, RETURN, FUN, CLASS, LEFT_BRACE))
+        {
+            current--;
+            return parse();
+        }
+        
+        int start = current;
+        try
+        {
+            Expr expr = expression();
+            if (isAtEnd()) return expr;
+        } catch (ParseError error) {}
+        
+        Lox.hadError = false; // suppress error message for second pass
+        current = start;
+
+        List<Stmt> statements = new ArrayList<>();
+        while (!isAtEnd()) {
+            statements.add(declaration());
+        }
+        return statements;
+    }
+
     List<Stmt> parse() {
         List<Stmt> statements = new ArrayList<>();
         while (!isAtEnd()) {

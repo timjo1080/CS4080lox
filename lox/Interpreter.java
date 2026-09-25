@@ -7,6 +7,17 @@ import lox.Expr.Conditional;
 class Interpreter implements Expr.Visitor<Object>,
                              Stmt.Visitor<Void>{
     private Environment environment = new Environment();
+    private static Object uninitialized = new Object();
+
+    // chapter 8 challenge 1
+    public void interpret(Expr expression) {
+        try {
+            Object value = evaluate(expression);
+            System.out.println(stringify(value));
+        } catch (RuntimeError error) {
+            Lox.runtimeError(error);
+        }
+    }
 
     @Override
     public Object visitLiteralExpr(Expr.Literal expr) {
@@ -29,9 +40,14 @@ class Interpreter implements Expr.Visitor<Object>,
         return null;
     }
 
+    // chapter 8 challenge 2
     @Override
     public Object visitVariableExpr(Expr.Variable expr) {
-        return environment.get(expr.name);
+        Object value = environment.get(expr.name);
+        if (value == uninitialized) {
+            throw new RuntimeError(expr.name, "Variable is not initialized");
+        }
+        return value;
     }
 
     @Override
@@ -132,7 +148,7 @@ class Interpreter implements Expr.Visitor<Object>,
 
     @Override
     public Void visitVarStmt(Stmt.Var stmt) {
-        Object value = null;
+        Object value = uninitialized;
         if (stmt.initializer != null) {
         value = evaluate(stmt.initializer);
         }

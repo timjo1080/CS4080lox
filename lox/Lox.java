@@ -40,11 +40,28 @@ public class Lox {
             System.out.print("> ");
             String line = reader.readLine();
             if (line == null) break;
-            run(line);
+            runRepl(line);
             hadError = false;
         }
     }
 
+    private static void runRepl(String source) {
+        Scanner scanner = new Scanner(source);
+        List<Token> tokens = scanner.scanTokens();
+
+        Parser parser = new Parser(tokens);
+        Object result = parser.parseRepl();
+
+        // Stop if there was a syntax error.
+        if (hadError) return;
+
+        if (result instanceof Expr) {
+            interpreter.interpret((Expr) result);
+        } else if (result instanceof List<?>) {
+            interpreter.interpret((List<Stmt>) result);
+        }
+    }
+    
     private static void run(String source) {
         Scanner scanner = new Scanner(source);
         List<Token> tokens = scanner.scanTokens();

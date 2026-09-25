@@ -1,6 +1,7 @@
 package lox;
 
 import lox.Expr.Assign;
+import lox.Expr.Logical;
 import lox.Expr.Variable;
 
 class RPNConverter implements Expr.Visitor<String> {
@@ -54,5 +55,11 @@ class RPNConverter implements Expr.Visitor<String> {
     public String visitVariableExpr(Variable expr) {
         // TODO Auto-generated method stub
         throw new UnsupportedOperationException("Unimplemented method 'visitVariableExpr'");
+    }
+
+    @Override
+    public String visitLogicalExpr(Logical expr) {
+        // TODO Auto-generated method stub
+        throw new UnsupportedOperationException("Unimplemented method 'visitLogicalExpr'");
     }
 }

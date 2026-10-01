@@ -58,7 +58,10 @@ class Parser {
 
     private Stmt declaration() {
     try {
-        if (match(FUN)) return function("function");
+        if (check(FUN) && checkNext(IDENTIFIER)) {
+            advance();                   
+            return function("function");
+        }
         if (match(VAR)) return varDeclaration();
 
         return statement();
@@ -66,6 +69,12 @@ class Parser {
         synchronize();
         return null;
         }
+    }
+
+    private boolean checkNext(TokenType type) {
+        if (isAtEnd()) return false;
+        if (tokens.get(current + 1).type == EOF) return false;
+        return tokens.get(current + 1).type == type;
     }
 
     private Stmt statement() {

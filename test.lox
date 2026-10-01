@@ -1,4 +1,7 @@
-fun scope(a) {
-  var a = "local";
-  print a;
+{
+  var a = 1;   // error: not used
+  var b = 2;
+  print b;
+  var c = 3;
+  c = 4;       // error: never read
 }

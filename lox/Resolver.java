@@ -242,20 +242,21 @@ class Resolver implements Expr.Visitor<Void>, Stmt.Visitor<Void> {
   }
 
   @Override
-  public Void visitBreakStmt(Break stmt) {
-    // TODO Auto-generated method stub
-    throw new UnsupportedOperationException("Unimplemented method 'visitBreakStmt'");
-  }
+    public Void visitBreakStmt(Stmt.Break stmt) {
+        return null;
+    }
 
   @Override
-  public Void visitConditionalExpr(Conditional expr) {
-    // TODO Auto-generated method stub
-    throw new UnsupportedOperationException("Unimplemented method 'visitConditionalExpr'");
-  }
+   public Void visitConditionalExpr(Expr.Conditional expr) {
+     resolve(expr.condition);
+     resolve(expr.thenBranch);
+     resolve(expr.elseBranch);
+     return null;
+   }
 
   @Override
-  public Void visitFunctionExpr(Function expr) {
-    // TODO Auto-generated method stub
-    throw new UnsupportedOperationException("Unimplemented method 'visitFunctionExpr'");
-  }
+    public Void visitFunctionExpr(Expr.Function expr) {
+        resolveFunction(expr, FunctionType.FUNCTION);
+        return null;
+    }
 }

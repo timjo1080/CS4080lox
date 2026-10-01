@@ -3,7 +3,6 @@ package lox;
 import java.util.List;
 
 import lox.Expr.Conditional;
-import lox.Expr.Return;
 
 import java.util.ArrayList;
 import lox.Stmt.Break;
@@ -174,13 +173,6 @@ class Interpreter implements Expr.Visitor<Object>,
         evaluate(stmt.expression);
         return null;
     }
-
-    @Override
-    public Void visitFunctionStmt(Stmt.Function stmt) {
-        LoxFunction function = new LoxFunction(stmt, environment);
-        environment.define(stmt.name.lexeme, function);
-        return null;
-    }
     
     @Override
     public Void visitIfStmt(Stmt.If stmt) {
@@ -326,5 +318,17 @@ class Interpreter implements Expr.Visitor<Object>,
         } catch (RuntimeError error) {
         Lox.runtimeError(error);
         }
+    }
+
+    @Override 
+    public Void visitFunctionStmt(Stmt.Function stmt) {
+        String fnName = stmt.name.lexeme;
+        environment.define(stmt.name.lexeme, new LoxFunction(fnName, stmt.function, environment));
+        return null;
+    }
+
+    @Override
+    public Object visitFunctionExpr(Expr.Function expr) {
+        return new LoxFunction(null, expr, environment);
     }
 }

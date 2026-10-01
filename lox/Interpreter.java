@@ -14,15 +14,16 @@ import lox.Stmt.Break;
 
 class Interpreter implements Expr.Visitor<Object>,
                              Stmt.Visitor<Void>{
-    final Environment globals = new Environment();
-    private Environment environment = globals;
+    final Map<String, Object> globals = new HashMap<>();
+    private Environment environment = null;
     private static Object uninitialized = new Object();
     private final Map<Expr, Integer> locals = new HashMap<>();
+    private final Map<Expr, Integer> slots = new HashMap<>();
 
     private static class BreakException extends RuntimeException {}
     
     Interpreter() {
-        globals.define("clock", new LoxCallable() {
+        globals.put("clock", new LoxCallable() {
         @Override
         public int arity() { return 0; }
 
@@ -84,20 +85,24 @@ class Interpreter implements Expr.Visitor<Object>,
     // chapter 8 challenge 2
     @Override
     public Object visitVariableExpr(Expr.Variable expr) {
-        Object value = environment.get(expr.name);
-        if (value == uninitialized) {
-            throw new RuntimeError(expr.name, "Variable is not initialized");
-        }
         return lookUpVariable(expr.name, expr);
     }
 
     private Object lookUpVariable(Token name, Expr expr) {
         Integer distance = locals.get(expr);
+        Object value;
         if (distance != null) {
-        return environment.getAt(distance, name.lexeme);
+            value = environment.getAt(distance, slots.get(expr));
+        } else if (globals.containsKey(name.lexeme)) {
+            value = globals.get(name.lexeme);
         } else {
-        return globals.get(name);
+            throw new RuntimeError(name,
+                "Undefined variable '" + name.lexeme + "'.");
         }
+        if (value == uninitialized) {
+            throw new RuntimeError(name, "Variable is not initialized");
+        }
+        return value;
     }
     @Override
     public Object visitConditionalExpr(Conditional expr) {
@@ -162,8 +167,9 @@ class Interpreter implements Expr.Visitor<Object>,
         stmt.accept(this);
     }
 
-    void resolve(Expr expr, int depth) {
-        locals.put(expr, depth);
+    void resolve(Expr expr, int depth, int slot) {
+        locals.put(expr, depth); 
+        slots.put(expr, slot);
     }
 
     void executeBlock(List<Stmt> statements,
@@ -224,7 +230,7 @@ class Interpreter implements Expr.Visitor<Object>,
         value = evaluate(stmt.initializer);
         }
 
-        environment.define(stmt.name.lexeme, value);
+        define(stmt.name, value);
         return null;
     }
 
@@ -247,13 +253,12 @@ class Interpreter implements Expr.Visitor<Object>,
     @Override
     public Object visitAssignExpr(Expr.Assign expr) {
         Object value = evaluate(expr.value);
-        environment.assign(expr.name, value);
-
+        
         Integer distance = locals.get(expr);
         if (distance != null) {
-            environment.assignAt(distance, expr.name, value);
+            environment.assignAt(distance, slots.get(expr), value);
         } else {
-            globals.assign(expr.name, value);
+            globals.put(expr.name.lexeme, value);
         }
 
         return value;
@@ -346,15 +351,23 @@ class Interpreter implements Expr.Visitor<Object>,
         }
     }
 
-    @Override 
+    @Override
     public Void visitFunctionStmt(Stmt.Function stmt) {
-        String fnName = stmt.name.lexeme;
-        environment.define(stmt.name.lexeme, new LoxFunction(fnName, stmt.function, environment));
+        define(stmt.name,
+            new LoxFunction(stmt.name.lexeme, stmt.function, environment));
         return null;
     }
 
     @Override
     public Object visitFunctionExpr(Expr.Function expr) {
         return new LoxFunction(null, expr, environment);
+    }
+
+    private void define(Token name, Object value) {
+        if (environment != null) {
+        environment.define(value);
+        } else {
+        globals.put(name.lexeme, value);
+        }
     }
 }

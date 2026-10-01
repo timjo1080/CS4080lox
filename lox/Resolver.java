@@ -33,10 +33,12 @@ class Resolver implements Expr.Visitor<Void>, Stmt.Visitor<Void> {
   private static class Variable {
     VariableState state;
     final Token name;
+    final int slot;
 
-    Variable(Token name, VariableState state) {
-        this.name = name;
-        this.state = state;
+    Variable(Token name, VariableState state, int slot) {
+      this.name = name;
+      this.state = state;
+      this.slot = slot;
     }
   }
 
@@ -164,14 +166,15 @@ class Resolver implements Expr.Visitor<Void>, Stmt.Visitor<Void> {
 
   @Override
   public Void visitVariableExpr(Expr.Variable expr) {
-    if (!scopes.isEmpty() &&
-        scopes.peek().get(expr.name.lexeme).state == VariableState.DECLARED) {
-      Lox.error(expr.name,
-          "Can't read local variable in its own initializer.");
-    }
+      if (!scopes.isEmpty()) {
+          var variableInfo = scopes.peek().get(expr.name.lexeme);
+          if (variableInfo != null && variableInfo.state == VariableState.DECLARED) {
+              Lox.error(expr.name, "Can't read local variable in its own initializer.");
+          }
+      }
 
-    resolveLocal(expr, expr.name, true);
-    return null;
+      resolveLocal(expr, expr.name, true);
+      return null;
   }
 
   private void resolve(Stmt stmt) {
@@ -219,7 +222,8 @@ class Resolver implements Expr.Visitor<Void>, Stmt.Visitor<Void> {
           "Already a variable with this name in this scope.");
     }
 
-    scope.put(name.lexeme, new Variable(name, VariableState.DECLARED));
+    scope.put(name.lexeme,
+      new Variable(name, VariableState.DECLARED, scope.size()));
   }
 
   private void define(Token name) {
@@ -228,18 +232,18 @@ class Resolver implements Expr.Visitor<Void>, Stmt.Visitor<Void> {
   }
 
   private void resolveLocal(Expr expr, Token name, boolean isRead) {
-    for (int i = scopes.size() - 1; i >= 0; i--) {
-      if (scopes.get(i).containsKey(name.lexeme)) {
-        interpreter.resolve(expr, scopes.size() - 1 - i);
+  for (int i = scopes.size() - 1; i >= 0; i--) {
+    Variable v = scopes.get(i).get(name.lexeme);
+    if (v != null) {
+      interpreter.resolve(expr, scopes.size() - 1 - i, v.slot);
 
-        if(isRead)
-        {
-            scopes.get(i).get(name.lexeme).state = VariableState.READ;
-        }
-        return;
+      if (isRead) {
+        v.state = VariableState.READ;
       }
+      return;
     }
   }
+}
 
   @Override
     public Void visitBreakStmt(Stmt.Break stmt) {

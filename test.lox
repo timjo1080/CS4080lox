@@ -1,7 +1,18 @@
+fun makeCounter() {
+  var i = 0;
+  fun count() {
+    i = i + 1;
+    print i;
+  }
+  return count;
+}
+var c = makeCounter();
+c();   // 1
+c();   // 2
+
 {
-  var a = 1;   // error: not used
-  var b = 2;
-  print b;
-  var c = 3;
-  c = 4;       // error: never read
+  var a = "x";
+  var b = "y";
+  print b;   // y
+  print a;   // x
 }

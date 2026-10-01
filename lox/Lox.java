@@ -76,6 +76,8 @@ public class Lox {
         resolver.resolve(statements);
 
         if (hadError) return;
+
+        interpreter.interpret(statements);
     }
 
     static void error(int line, String message) {

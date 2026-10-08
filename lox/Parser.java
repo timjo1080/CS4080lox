@@ -77,13 +77,20 @@ class Parser {
         consume(LEFT_BRACE, "Expect '{' before class body.");
 
         List<Stmt.Function> methods = new ArrayList<>();
+        List<Stmt.Function> staticMethods = new ArrayList<>();
         while (!check(RIGHT_BRACE) && !isAtEnd()) {
-        methods.add(function("method"));
+            boolean isClassMethod = match(CLASS);
+            Stmt.Function function = function(isClassMethod ? "class method" : "method");
+            if (isClassMethod) {
+                staticMethods.add(function);
+            } else {
+                methods.add(function);
+            }
         }
 
         consume(RIGHT_BRACE, "Expect '}' after class body.");
 
-        return new Stmt.Class(name, methods);
+        return new Stmt.Class(name, methods, staticMethods);
     }
 
     private boolean checkNext(TokenType type) {
@@ -226,7 +233,31 @@ class Parser {
 
     private Stmt.Function function(String kind) {
         Token name = consume(IDENTIFIER, "Expect " + kind + " name.");
-        return new Stmt.Function(name, functionBody(kind));
+
+        List<Token> parameters = null;
+
+        if(!kind.equals("method") || check(LEFT_PAREN))
+        {
+            consume(LEFT_PAREN, "Expect '(' after " + kind + " name.");
+            parameters = new ArrayList<>();
+            while (!check(RIGHT_PAREN)) {
+                if (parameters.size() >= 255) {
+                    error(peek(), "Can't have more than 255 parameters.");
+                }
+
+                parameters.add(
+                    consume(IDENTIFIER, "Expect parameter name."));
+                if (!check(RIGHT_PAREN)) {
+                    consume(COMMA, "Expect ',' between parameters.");
+                }
+            }
+            consume(RIGHT_PAREN, "Expect ')' after parameters.");
+        }
+
+        consume(LEFT_BRACE, "Expect '{' before " + kind + " body.");
+        List<Stmt> body = block();
+        Expr.Function function = new Expr.Function(parameters, body);
+        return new Stmt.Function(name, function);
     }
 
     private Expr.Function functionBody(String kind)

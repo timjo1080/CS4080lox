@@ -1,5 +1,21 @@
-class Bagel {
-  init(t) { this.t = t; }
-  eat() { print this.t; }
+class Circle {
+  init(radius) {
+    this.radius = radius;
+  }
+
+  // Getter: accessed without ()
+  area {
+    return 3.141592653 * this.radius * this.radius;
+  }
+
+  // Normal method: requires ()
+  doubleRadius() {
+    return this.radius * 2;
+  }
 }
-Bagel("sesame").eat();
+
+var circle = Circle(4);
+
+print circle.radius;
+print circle.area;
+print circle.doubleRadius();

@@ -1,21 +1,14 @@
-class Circle {
-  init(radius) {
-    this.radius = radius;
-  }
-
-  // Getter: accessed without ()
-  area {
-    return 3.141592653 * this.radius * this.radius;
-  }
-
-  // Normal method: requires ()
-  doubleRadius() {
-    return this.radius * 2;
+class Animal {
+  speak() {
+    print "...";
   }
 }
 
-var circle = Circle(4);
+class Dog < Animal {
+  speak() {
+    super.speak();
+    print "Woof!";
+  }
+}
 
-print circle.radius;
-print circle.area;
-print circle.doubleRadius();
+Dog().speak();
